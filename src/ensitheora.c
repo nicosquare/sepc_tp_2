@@ -1,16 +1,18 @@
 #include <stdbool.h>
 #include <assert.h>
+#include <pthread.h>
 #include <SDL2/SDL.h>
 #include "ensitheora.h"
 #include "synchro.h"
 #include "stream_common.h"
+
+extern pthread_mutex_t mutex_video;
 
 int windowsx = 0;
 int windowsy = 0;
 
 int tex_iaff= 0;
 int tex_iwri= 0;
-
 
 static SDL_Window *screen = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -56,9 +58,9 @@ void *draw2SDL(void *arg) {
 
     /* Protéger l'accès à la hashmap */
 
+	pthread_mutex_lock(&mutex_video);
     HASH_FIND_INT( theorastrstate, &serial, s );
-
-
+	pthread_mutex_unlock (&mutex_video);
 
     assert(s->strtype == TYPE_THEORA);
     
@@ -135,6 +137,13 @@ void theora2SDL(struct streamstate *s) {
 			       buffer[2].data,
 			       buffer[2].stride);
     texturedate[tex_iwri].timems = framedate * 1000;
+    
+    if (res < 0) {
+	    // Unrecoverable error, exit here.
+	    printf("SDL_UpdateYUVTexture failed: %s\n", SDL_GetError());
+	}
+
+
     assert(res == 0);
     tex_iwri = (tex_iwri + 1) % NBTEX;
 

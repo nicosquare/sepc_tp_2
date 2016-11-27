@@ -1,12 +1,14 @@
 #include <time.h>
 #include <assert.h>
+#include <pthread.h>
 #include "ensivorbis.h"
 #include "ensitheora.h"
 #include "stream_common.h"
 #include "synchro.h"
 
 bool fini = false;
-
+extern pthread_t draw2sdl_id;
+extern pthread_mutex_t mutex_video;
 
 struct timespec datedebut;
 
@@ -66,16 +68,22 @@ struct streamstate *getStreamState(ogg_sync_state *pstate, ogg_page *ppage,
 
 	// proteger l'accès à la hashmap
 
-	if (type == TYPE_THEORA)
-	    HASH_ADD_INT( theorastrstate, serial, s );
+	if (type == TYPE_THEORA){
+		pthread_mutex_lock(&mutex_video);
+		HASH_ADD_INT( theorastrstate, serial, s );
+		pthread_mutex_unlock (&mutex_video);
+	}
 	else
 	    HASH_ADD_INT( vorbisstrstate, serial, s );
 
     } else {
 	// proteger l'accès à la hashmap
 
-	if (type == TYPE_THEORA)
+	if (type == TYPE_THEORA){
+		pthread_mutex_lock(&mutex_video);
 	    HASH_FIND_INT( theorastrstate, & serial, s );
+		pthread_mutex_unlock (&mutex_video);
+	}
 	else	
 	    HASH_FIND_INT( vorbisstrstate, & serial, s );    
 
@@ -111,6 +119,7 @@ int getPacket(struct streamstate *s) {
  */
 
 int decodeAllHeaders(int respac, struct streamstate *s, enum streamtype type) {
+
     // if the packet is complete, decode it
     if (respac == 1 && (! s->headersRead) &&
 	s->strtype != TYPE_VORBIS) {
@@ -140,7 +149,10 @@ int decodeAllHeaders(int respac, struct streamstate *s, enum streamtype type) {
 
 	    if (type == TYPE_THEORA) {
 		// lancement du thread gérant l'affichage (draw2SDL)
-	        // inserer votre code ici !!
+	        
+	        printf("Lance thread draw2SDL\n");
+		
+			pthread_create(&draw2sdl_id, NULL, draw2SDL, &(s->serial));
 
 		assert(res == 0);		     
 	    }

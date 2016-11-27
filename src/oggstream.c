@@ -87,7 +87,7 @@ void *vorbisStreamReader(void *arg) {
 	// vérifier si le fichier ne serait pas fini
 	if ( feof( vf ) ) {
 	    fini = true;
-	    printf("FIN de la lecture de VORBIS !");
+	    printf("FIN de la lecture de VORBIS !\n");
 	    break;
 	}
 
