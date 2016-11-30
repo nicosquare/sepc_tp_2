@@ -1,14 +1,12 @@
 #include <time.h>
 #include <assert.h>
-#include <pthread.h>
+
 #include "ensivorbis.h"
 #include "ensitheora.h"
 #include "stream_common.h"
 #include "synchro.h"
 
 bool fini = false;
-extern pthread_t draw2sdl_id;
-extern pthread_mutex_t mutex_video;
 
 struct timespec datedebut;
 
@@ -152,7 +150,7 @@ int decodeAllHeaders(int respac, struct streamstate *s, enum streamtype type) {
 	        
 	        printf("Lance thread draw2SDL\n");
 		
-			pthread_create(&draw2sdl_id, NULL, draw2SDL, &(s->serial));
+			pthread_create(&draw2sdl_id, NULL, draw2SDL, (void *)(long long int)(s->serial));
 
 		assert(res == 0);		     
 	    }

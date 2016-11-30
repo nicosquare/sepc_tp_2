@@ -1,12 +1,10 @@
 #include <stdbool.h>
 #include <assert.h>
-#include <pthread.h>
 #include <SDL2/SDL.h>
+
 #include "ensitheora.h"
 #include "synchro.h"
 #include "stream_common.h"
-
-extern pthread_mutex_t mutex_video;
 
 int windowsx = 0;
 int windowsy = 0;
@@ -21,7 +19,7 @@ struct TextureDate texturedate[NBTEX] = {};
 struct streamstate *theorastrstate=NULL;
 
 void *draw2SDL(void *arg) {
-    int serial = (int) (long long int) arg;
+    int serial = (int) (long long) arg;
     struct streamstate *s= NULL;
 
     attendreTailleFenetre();
@@ -33,7 +31,8 @@ void *draw2SDL(void *arg) {
 			      windowsx,
 			      windowsy,
 			      0);
-    renderer = SDL_CreateRenderer(screen, -1, 0);
+
+   	renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_SOFTWARE);
 	    
     assert(screen);
     assert(renderer);
@@ -142,7 +141,6 @@ void theora2SDL(struct streamstate *s) {
 	    // Unrecoverable error, exit here.
 	    printf("SDL_UpdateYUVTexture failed: %s\n", SDL_GetError());
 	}
-
 
     assert(res == 0);
     tex_iwri = (tex_iwri + 1) % NBTEX;

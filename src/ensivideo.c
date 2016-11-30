@@ -2,22 +2,21 @@
 #include <unistd.h>
 #include <assert.h>
 #include <SDL2/SDL.h>
-#include <pthread.h>
 
+#include "synchro.h"
 #include "stream_common.h"
 #include "oggstream.h"
-
-
-pthread_t audio_id, video_id, draw2sdl_id;
-pthread_mutex_t mutex_video;
 
 int main(int argc, char *argv[]) {
 	
     int res;
     void * status;
 
-    // Init Mutex video
-    pthread_mutex_init(&mutex_video, NULL);
+    // Init Mutex
+	pthread_mutex_init(&mutex_video, NULL);
+	pthread_mutex_init(&mutex_screen, NULL);
+	pthread_mutex_init(&mutex_texture, NULL);
+	pthread_mutex_init(&mutex_cons, NULL);
 
     if (argc != 2) {
 	fprintf(stderr, "Usage: %s FILE\n", argv[0]);
